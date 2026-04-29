@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/spmp?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: liping
+    password: ss123456
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+
+# JWT 本地开发配置
+jwt:
+  secret: localDevSecretKeyMustBeAtLeast32Chars
+  admin-expiration: 28800000
+  owner-expiration: 604800000
+
+# CORS 本地开发配置
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:8080,http://localhost:5173
+
+# AES 加密密钥（本地开发用，16 字符）
+encrypt:
+  aes-key: spmp2026SecretK1
+
+# 测试模式：跳过图形验证码校验（仅本地/测试环境）
+captcha:
+  skip: true
+
+# 日志级别
+logging:
+  level:
+    com.spmp: DEBUG
+
+# 本地文件上传路径（Windows）
+file:
+  upload:
+    path: C:/projects/GDCProjects/AIStart/src/spmp-backend/uploads
+
+billing:
+  mock-callback-sign: test-mock-sign-2026

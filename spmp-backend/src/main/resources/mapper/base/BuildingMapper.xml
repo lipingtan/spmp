@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.base.repository.BuildingMapper">
+
+    <!-- 楼栋分页查询（关联小区名称） -->
+    <select id="selectBuildingPage" resultType="com.spmp.base.domain.dto.BuildingPageDTO">
+        SELECT
+            b.id,
+            b.building_name,
+            b.building_code,
+            b.community_id,
+            c.community_name,
+            b.above_ground_floors,
+            b.underground_floors,
+            b.units_per_floor,
+            b.building_type,
+            b.status,
+            b.remark,
+            b.create_time,
+            b.update_time
+        FROM bs_building b
+            LEFT JOIN bs_community c ON b.community_id = c.id
+        WHERE b.del_flag = 0
+        <if test="query.buildingName != null and query.buildingName != ''">
+            AND b.building_name LIKE CONCAT('%', #{query.buildingName}, '%')
+        </if>
+        <if test="query.buildingCode != null and query.buildingCode != ''">
+            AND b.building_code LIKE CONCAT('%', #{query.buildingCode}, '%')
+        </if>
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingType != null and query.buildingType != ''">
+            AND b.building_type = #{query.buildingType}
+        </if>
+        <if test="query.status != null">
+            AND b.status = #{query.status}
+        </if>
+        ORDER BY b.create_time DESC
+    </select>
+
+</mapper>

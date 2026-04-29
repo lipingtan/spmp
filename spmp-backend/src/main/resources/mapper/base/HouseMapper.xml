@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.base.repository.HouseMapper">
+
+    <!-- 房屋分页查询（多级 JOIN：unit → building → community） -->
+    <select id="selectHousePage" resultType="com.spmp.base.domain.dto.HousePageDTO">
+        SELECT
+            h.id,
+            h.house_code,
+            h.unit_id,
+            u.unit_name,
+            bd.id AS building_id,
+            bd.building_name,
+            c.id AS community_id,
+            c.community_name,
+            h.floor,
+            h.building_area,
+            h.usable_area,
+            h.house_status,
+            h.house_type,
+            h.remark,
+            h.create_time,
+            h.update_time
+        FROM bs_house h
+            LEFT JOIN bs_unit u ON h.unit_id = u.id
+            LEFT JOIN bs_building bd ON u.building_id = bd.id
+            LEFT JOIN bs_community c ON bd.community_id = c.id
+        WHERE h.del_flag = 0
+        <if test="query.houseCode != null and query.houseCode != ''">
+            AND h.house_code LIKE CONCAT('%', #{query.houseCode}, '%')
+        </if>
+        <if test="query.unitId != null">
+            AND h.unit_id = #{query.unitId}
+        </if>
+        <if test="query.buildingId != null">
+            AND bd.id = #{query.buildingId}
+        </if>
+        <if test="query.communityId != null">
+            AND c.id = #{query.communityId}
+        </if>
+        <if test="query.floor != null">
+            AND h.floor = #{query.floor}
+        </if>
+        <if test="query.houseStatus != null and query.houseStatus != ''">
+            AND h.house_status = #{query.houseStatus}
+        </if>
+        <if test="query.houseType != null and query.houseType != ''">
+            AND h.house_type = #{query.houseType}
+        </if>
+        ORDER BY h.create_time DESC
+    </select>
+
+</mapper>

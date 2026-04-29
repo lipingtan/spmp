@@ -1,0 +1,113 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  # Jackson 全局序列化配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # 文件上传大小限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  # 数据源配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 运行时目标业务库；未初始化完成前由路由数据源切到 mysql 占位库以便启动
+    url: ${DB_URL:jdbc:mysql://localhost:3306/spmp?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:liping}
+    password: ${DB_PASSWORD:ss123456}
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 10000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: true
+      test-on-return: false
+      break-after-acquire-failure: false
+      connection-error-retry-attempts: 3
+      keep-alive: true
+      phy-max-use-count: 1000
+
+  # Redis 配置
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 2000ms
+      shutdown-timeout: 100ms
+
+# MyBatis Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# JWT 配置
+jwt:
+  secret: ${JWT_SECRET:defaultSecretKeyForDevelopmentOnly1234}
+  admin-expiration: 28800000
+  owner-expiration: 604800000
+
+# CORS 配置
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:8080}
+
+# 安全白名单扩展
+security:
+  white-list: ${SECURITY_WHITE_LIST:}
+
+# AES 加密密钥
+encrypt:
+  aes-key: ${AES_KEY:spmp2026SecretK1}
+
+# user 模块配置
+user:
+  default-password: Spmp@2026
+  login:
+    max-fail-count: 5
+    lock-minutes: 30
+
+# 文件上传配置
+file:
+  upload:
+    path: ${FILE_UPLOAD_PATH:/data/spmp/uploads}
+    max-size: 5MB
+    allowed-types: image/jpeg,image/png,image/gif,image/webp
+
+sequence:
+  mode:
+    billing: legacy
+    workorder: legacy
+  step:
+    PAYMENT: 1000
+    WORK_ORDER: 200

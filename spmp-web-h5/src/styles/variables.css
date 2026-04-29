@@ -1,0 +1,107 @@
+/**
+ * SPMP H5 端 CSS 变量定义
+ * 包含主色、功能色、中性色、业务状态色、间距、字体、布局尺寸、圆角、阴影
+ */
+
+:root,
+[data-theme='business'] {
+  /* 主色 */
+  --color-primary: #1677ff;
+  --color-primary-hover: #4096ff;
+  --color-primary-active: #0958d9;
+  --color-brand-gradient-start: #3d8bff;
+  --color-brand-gradient-end: #1f4bff;
+
+  /* 功能色 */
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-error: #ff4d4f;
+  --color-info: #1677ff;
+
+  /* 中性色 */
+  --color-text-primary: #1f2937;
+  --color-text-regular: #4b5563;
+  --color-text-secondary: #505c6f;
+  --color-text-disabled: #7c889b;
+  --color-border: #dbe3ef;
+  --color-bg-page: #eef3fb;
+  --color-bg-white: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f8fbff;
+
+  /* 业务状态色 */
+  --color-status-pending: #faad14;
+  --color-status-processing: #1677ff;
+  --color-status-completed: #52c41a;
+  --color-status-cancelled: #8c8c8c;
+  --color-status-overdue: #ff4d4f;
+
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+
+  /* 字体族 */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+
+  /* H5 端布局尺寸 */
+  --navbar-height: 44px;
+  --tabbar-height: 50px;
+  --content-padding: 16px;
+
+  /* 圆角 */
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 18px;
+
+  /* 阴影与玻璃感 */
+  --shadow-sm: 0 4px 10px rgba(15, 45, 100, 0.08);
+  --shadow-md: 0 8px 20px rgba(15, 45, 100, 0.12);
+  --shadow-lg: 0 18px 40px rgba(15, 45, 100, 0.16);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.56);
+  --tabbar-bg: rgba(255, 255, 255, 0.92);
+  --tabbar-active-shadow: 0 0 12px rgba(64, 150, 255, 0.35);
+}
+
+[data-theme='luxury-dark'] {
+  --color-primary: #d4af37;
+  --color-primary-hover: #e6c96a;
+  --color-primary-active: #bb9a2d;
+  --color-brand-gradient-start: #2a2e3d;
+  --color-brand-gradient-end: #12141d;
+
+  --color-success: #41c682;
+  --color-warning: #ffbd4a;
+  --color-error: #ff6b7a;
+  --color-info: #7da6ff;
+
+  --color-text-primary: #f3f5fa;
+  --color-text-regular: #c8cedd;
+  --color-text-secondary: #b2b9cb;
+  --color-text-disabled: #8f96aa;
+  --color-border: rgba(212, 175, 55, 0.18);
+  --color-bg-page: #0b0d12;
+  --color-bg-white: #171a21;
+  --color-surface: #171a21;
+  --color-surface-elevated: #1d212c;
+
+  --color-status-pending: #ffbd4a;
+  --color-status-processing: #7da6ff;
+  --color-status-completed: #41c682;
+  --color-status-cancelled: #8d94a8;
+  --color-status-overdue: #ff6b7a;
+
+  --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.56);
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(212, 175, 55, 0.2);
+  --tabbar-bg: rgba(11, 13, 18, 0.84);
+  --tabbar-active-shadow: 0 0 14px rgba(212, 175, 55, 0.42);
+}

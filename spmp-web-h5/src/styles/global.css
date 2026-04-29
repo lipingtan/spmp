@@ -1,0 +1,115 @@
+/**
+ * SPMP H5 端全局样式
+ * 包含 CSS 变量引入、盒模型重置、基础排版、安全区域适配
+ */
+
+@import './variables.css';
+
+/* 盒模型重置 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 基础排版与全屏高度 */
+html,
+body,
+#app {
+  height: 100%;
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--color-text-regular);
+  background-color: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.28s ease, color 0.28s ease;
+}
+
+body {
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(66, 133, 244, 0.12), transparent 52%),
+    radial-gradient(120% 90% at 100% 0%, rgba(212, 175, 55, 0.1), transparent 58%),
+    var(--color-bg-page);
+}
+
+/* 链接默认样式 */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* 安全区域适配（iPhone 底部安全区） */
+.safe-area-bottom {
+  padding-bottom: constant(safe-area-inset-bottom); /* iOS < 11.2 */
+  padding-bottom: env(safe-area-inset-bottom);       /* iOS >= 11.2 */
+}
+
+/* Vant 主题覆盖：统一高质感风格 */
+:root {
+  --van-primary-color: var(--color-primary);
+  --van-success-color: var(--color-success);
+  --van-danger-color: var(--color-error);
+  --van-warning-color: var(--color-warning);
+  --van-background-2: var(--color-bg-page);
+  --van-background-3: var(--color-surface);
+  --van-text-color: var(--color-text-primary);
+  --van-text-color-2: var(--color-text-regular);
+  --van-text-color-3: var(--color-text-secondary);
+  --van-border-color: var(--color-border);
+  --van-nav-bar-background: var(--glass-bg);
+  --van-nav-bar-title-text-color: var(--color-text-primary);
+  --van-tabbar-background: var(--tabbar-bg);
+  --van-tabbar-item-text-color: var(--color-text-secondary);
+  --van-tabbar-item-active-color: var(--color-primary);
+  --van-cell-background: var(--color-surface);
+  --van-cell-text-color: var(--color-text-primary);
+}
+
+.van-nav-bar {
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.van-tabbar {
+  backdrop-filter: blur(18px);
+  border-top: 1px solid var(--glass-border);
+}
+
+.van-tabbar-item {
+  font-weight: 500;
+}
+
+.van-tabbar-item__text {
+  color: var(--color-text-secondary);
+}
+
+.van-field__label,
+.van-cell__label,
+.van-empty__description {
+  color: var(--color-text-secondary);
+}
+
+.van-tabbar-item--active {
+  text-shadow: var(--tabbar-active-shadow);
+}
+
+.van-button--primary {
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--color-primary) 34%, transparent);
+}
+
+.van-button--primary:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.van-cell-group,
+.van-card,
+.van-empty,
+.van-field__control,
+.van-button {
+  transition: all 0.22s ease;
+}

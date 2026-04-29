@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.notice.repository.AnnouncementMapper">
+
+    <select id="selectManagePage" resultType="com.spmp.notice.domain.vo.NoticeListVO">
+        SELECT
+            a.id,
+            a.title,
+            a.notice_type AS noticeType,
+            a.status,
+            a.top_flag AS topFlag,
+            a.publish_time AS publishTime,
+            a.expire_time AS expireTime,
+            CASE WHEN a.expire_time IS NOT NULL AND a.expire_time &lt; NOW() THEN TRUE ELSE FALSE END AS expired
+        FROM nt_announcement a
+        WHERE a.del_flag = 0
+        <if test="query != null and query.title != null and query.title != ''">
+            AND a.title LIKE CONCAT('%', #{query.title}, '%')
+        </if>
+        <if test="query != null and query.noticeType != null and query.noticeType != ''">
+            AND a.notice_type = #{query.noticeType}
+        </if>
+        <if test="query != null and query.status != null and query.status != ''">
+            AND a.status = #{query.status}
+        </if>
+        <if test="query != null and query.startTime != null">
+            AND a.create_time &gt;= #{query.startTime}
+        </if>
+        <if test="query != null and query.endTime != null">
+            AND a.create_time &lt;= #{query.endTime}
+        </if>
+        ORDER BY a.top_flag DESC, a.publish_time DESC, a.id DESC
+    </select>
+
+    <select id="selectMinePage" resultType="com.spmp.notice.domain.vo.NoticeListVO">
+        SELECT
+            a.id,
+            a.title,
+            a.notice_type AS noticeType,
+            a.status,
+            a.top_flag AS topFlag,
+            a.publish_time AS publishTime,
+            a.expire_time AS expireTime,
+            CASE WHEN a.expire_time IS NOT NULL AND a.expire_time &lt; NOW() THEN TRUE ELSE FALSE END AS expired,
+            CASE WHEN rr.id IS NOT NULL THEN TRUE ELSE FALSE END AS `read`
+        FROM nt_announcement a
+        INNER JOIN nt_announcement_target_snapshot ts ON ts.announcement_id = a.id AND ts.user_id = #{userId}
+        LEFT JOIN nt_announcement_read_record rr ON rr.announcement_id = a.id AND rr.user_id = #{userId}
+        WHERE a.del_flag = 0
+          AND a.status = 'PUBLISHED'
+          AND (a.expire_time IS NULL OR a.expire_time &gt;= NOW())
+        <if test="noticeType != null and noticeType != ''">
+            AND a.notice_type = #{noticeType}
+        </if>
+        ORDER BY a.top_flag DESC, a.publish_time DESC, a.id DESC
+    </select>
+
+    <select id="countPublishedSince" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM nt_announcement a
+        WHERE a.del_flag = 0
+          AND a.status = 'PUBLISHED'
+          AND a.publish_time IS NOT NULL
+          AND a.publish_time &gt;= #{publishSince}
+    </select>
+
+</mapper>

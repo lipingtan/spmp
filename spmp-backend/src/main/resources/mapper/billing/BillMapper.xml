@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.billing.repository.BillMapper">
+
+    <!-- ============================================================
+         PC 端账单分页查询（数据权限由 @DataPermission 拦截器注入）
+         ============================================================ -->
+    <select id="selectBillPage" resultType="com.spmp.billing.domain.vo.BillListVO">
+        SELECT
+            b.id,
+            b.bill_no        AS billNo,
+            b.fee_type       AS feeType,
+            b.amount,
+            b.reduce_amount  AS reduceAmount,
+            b.paid_amount    AS paidAmount,
+            b.status,
+            b.owner_id       AS ownerId,
+            b.owner_name     AS ownerName,
+            b.house_id       AS houseId,
+            b.billing_period AS billingPeriod,
+            b.due_date       AS dueDate,
+            b.paid_time      AS paidTime,
+            b.batch_no       AS batchNo,
+            b.create_time    AS createTime
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+        <if test="query.status != null and query.status != ''">
+            AND b.status = #{query.status}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND b.building_id = #{query.buildingId}
+        </if>
+        <if test="query.billingPeriod != null and query.billingPeriod != ''">
+            AND b.billing_period = #{query.billingPeriod}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (b.bill_no LIKE CONCAT('%', #{query.keyword}, '%')
+                OR b.owner_name LIKE CONCAT('%', #{query.keyword}, '%'))
+        </if>
+        ORDER BY b.create_time DESC
+    </select>
+
+    <!-- ============================================================
+         统计查询（收费统计模块）
+         ============================================================ -->
+
+    <!-- 统计应收金额（待缴费 + 逾期 + 已缴费 + 已减免） -->
+    <select id="sumReceivable" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(b.amount), 0)
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+          AND b.status NOT IN ('CANCELLED', 'REFUNDED')
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND b.building_id = #{query.buildingId}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+        <if test="query.startDate != null">
+            AND b.billing_period &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null">
+            AND b.billing_period &lt;= #{query.endDate}
+        </if>
+    </select>
+
+    <!-- 统计实收金额（已缴费 + 已减免） -->
+    <select id="sumReceived" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(b.paid_amount), 0)
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+          AND b.status IN ('PAID', 'REDUCED')
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND b.building_id = #{query.buildingId}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+        <if test="query.startDate != null">
+            AND b.billing_period &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null">
+            AND b.billing_period &lt;= #{query.endDate}
+        </if>
+    </select>
+
+    <!-- 统计逾期金额 -->
+    <select id="sumOverdue" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(b.amount - COALESCE(b.reduce_amount, 0)), 0)
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+          AND b.status = 'OVERDUE'
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND b.building_id = #{query.buildingId}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+    </select>
+
+    <!-- 统计逾期户数 -->
+    <select id="countOverdue" resultType="int">
+        SELECT COUNT(DISTINCT b.owner_id)
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+          AND b.status = 'OVERDUE'
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND b.building_id = #{query.buildingId}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+    </select>
+
+    <!-- 统计减免金额 -->
+    <select id="sumReduce" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(b.reduce_amount), 0)
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+          AND b.reduce_amount > 0
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND b.building_id = #{query.buildingId}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+        <if test="query.startDate != null">
+            AND b.billing_period &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null">
+            AND b.billing_period &lt;= #{query.endDate}
+        </if>
+    </select>
+
+    <!-- 按月统计趋势数据 -->
+    <select id="selectMonthlyTrend" resultType="com.spmp.billing.domain.vo.TrendDataVO">
+        SELECT
+            b.billing_period                                    AS period,
+            COALESCE(SUM(b.amount), 0)                         AS receivable,
+            COALESCE(SUM(CASE WHEN b.status IN ('PAID','REDUCED') THEN b.paid_amount ELSE 0 END), 0) AS received,
+            CASE
+                WHEN COALESCE(SUM(b.amount), 0) = 0 THEN 0
+                ELSE ROUND(
+                    COALESCE(SUM(CASE WHEN b.status IN ('PAID','REDUCED') THEN b.paid_amount ELSE 0 END), 0)
+                    / COALESCE(SUM(b.amount), 1) * 100, 2)
+            END AS collectionRate
+        FROM bl_bill b
+        WHERE b.del_flag = 0
+          AND b.status NOT IN ('CANCELLED')
+        <if test="query.communityId != null">
+            AND b.community_id = #{query.communityId}
+        </if>
+        <if test="query.feeType != null and query.feeType != ''">
+            AND b.fee_type = #{query.feeType}
+        </if>
+        <if test="query.startDate != null">
+            AND b.billing_period &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null">
+            AND b.billing_period &lt;= #{query.endDate}
+        </if>
+        GROUP BY b.billing_period
+        ORDER BY b.billing_period ASC
+    </select>
+
+    <!-- ============================================================
+         对外 API 查询（BillingApi 接口使用）
+         ============================================================ -->
+
+    <!-- 按业主查询账单列表 -->
+    <select id="selectByOwnerId" resultType="com.spmp.billing.domain.entity.BillDO">
+        SELECT *
+        FROM bl_bill
+        WHERE owner_id = #{ownerId}
+          AND del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 统计业主逾期账单数 -->
+    <select id="countOverdueByOwnerId" resultType="int">
+        SELECT COUNT(*)
+        FROM bl_bill
+        WHERE owner_id = #{ownerId}
+          AND status = 'OVERDUE'
+          AND del_flag = 0
+    </select>
+
+    <!-- 按小区和月份统计缴费汇总 -->
+    <select id="sumPaidByCommunityAndMonth" resultType="java.util.Map">
+        SELECT
+            COUNT(*)                                AS totalCount,
+            COALESCE(SUM(amount), 0)                AS totalAmount,
+            COALESCE(SUM(paid_amount), 0)           AS paidAmount,
+            COUNT(CASE WHEN status = 'PAID' THEN 1 END) AS paidCount
+        FROM bl_bill
+        WHERE community_id = #{communityId}
+          AND billing_period = #{month}
+          AND del_flag = 0
+          AND status NOT IN ('CANCELLED')
+    </select>
+
+</mapper>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.owner.repository.OwnerMapper">
+
+    <!-- 业主 resultMap（含 EncryptTypeHandler 自动加解密） -->
+    <resultMap id="ownerResultMap" type="com.spmp.owner.domain.entity.OwnerDO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="owner_name" property="ownerName"/>
+        <result column="phone" property="phone" typeHandler="com.spmp.owner.config.EncryptTypeHandler"/>
+        <result column="id_card" property="idCard" typeHandler="com.spmp.owner.config.EncryptTypeHandler"/>
+        <result column="gender" property="gender"/>
+        <result column="avatar" property="avatar"/>
+        <result column="email" property="email"/>
+        <result column="emergency_contact" property="emergencyContact"/>
+        <result column="emergency_phone" property="emergencyPhone" typeHandler="com.spmp.owner.config.EncryptTypeHandler"/>
+        <result column="owner_source" property="ownerSource"/>
+        <result column="owner_status" property="ownerStatus"/>
+        <result column="previous_status" property="previousStatus"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+    </resultMap>
+
+    <!-- 业主分页查询（JOIN ow_property_binding + bs_house 实现数据权限过滤） -->
+    <select id="selectOwnerPage" resultType="com.spmp.owner.domain.dto.OwnerPageDTO">
+        SELECT DISTINCT
+            o.id,
+            o.owner_name,
+            o.phone,
+            o.id_card,
+            o.gender,
+            o.owner_source,
+            o.owner_status,
+            o.create_time
+        FROM ow_owner o
+            LEFT JOIN ow_property_binding pb ON o.id = pb.owner_id AND pb.status = 0 AND pb.del_flag = 0
+            LEFT JOIN bs_house h ON pb.house_id = h.id
+            LEFT JOIN bs_unit u ON h.unit_id = u.id
+            LEFT JOIN bs_building bd ON u.building_id = bd.id
+            LEFT JOIN bs_community c ON bd.community_id = c.id
+        WHERE o.del_flag = 0
+        <if test="query.ownerName != null and query.ownerName != ''">
+            AND o.owner_name LIKE CONCAT('%', #{query.ownerName}, '%')
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            AND o.phone = #{query.phone}
+        </if>
+        <if test="query.ownerStatus != null and query.ownerStatus != ''">
+            AND o.owner_status = #{query.ownerStatus}
+        </if>
+        <if test="query.communityId != null">
+            AND c.id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND bd.id = #{query.buildingId}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 按加密手机号查询业主（用于注册时匹配预录入） -->
+    <select id="selectByEncryptedPhone" resultMap="ownerResultMap">
+        SELECT *
+        FROM ow_owner
+        WHERE phone = #{encryptedPhone}
+          AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 按加密身份证号查询业主（用于唯一性校验） -->
+    <select id="selectByEncryptedIdCard" resultMap="ownerResultMap">
+        SELECT *
+        FROM ow_owner
+        WHERE id_card = #{encryptedIdCard}
+          AND del_flag = 0
+    </select>
+
+</mapper>

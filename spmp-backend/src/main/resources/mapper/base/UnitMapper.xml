@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.base.repository.UnitMapper">
+
+    <!-- 单元分页查询（关联楼栋名称） -->
+    <select id="selectUnitPage" resultType="com.spmp.base.domain.dto.UnitPageDTO">
+        SELECT
+            u.id,
+            u.unit_name,
+            u.unit_code,
+            u.building_id,
+            bd.building_name,
+            u.status,
+            u.remark,
+            u.create_time,
+            u.update_time
+        FROM bs_unit u
+            LEFT JOIN bs_building bd ON u.building_id = bd.id
+        WHERE u.del_flag = 0
+        <if test="query.unitName != null and query.unitName != ''">
+            AND u.unit_name LIKE CONCAT('%', #{query.unitName}, '%')
+        </if>
+        <if test="query.unitCode != null and query.unitCode != ''">
+            AND u.unit_code LIKE CONCAT('%', #{query.unitCode}, '%')
+        </if>
+        <if test="query.buildingId != null">
+            AND u.building_id = #{query.buildingId}
+        </if>
+        <if test="query.status != null">
+            AND u.status = #{query.status}
+        </if>
+        ORDER BY u.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.base.repository.CommunityMapper">
+
+    <!-- 小区分页查询（关联片区名称 + 统计总户数） -->
+    <select id="selectCommunityPage" resultType="com.spmp.base.domain.dto.CommunityPageDTO">
+        SELECT
+            c.id,
+            c.community_name,
+            c.community_code,
+            c.address,
+            c.district_id,
+            d.district_name,
+            c.phone,
+            c.property_company,
+            c.area,
+            c.status,
+            c.remark,
+            c.create_time,
+            c.update_time,
+            (SELECT COUNT(*)
+             FROM bs_house h
+                 INNER JOIN bs_unit u ON h.unit_id = u.id AND u.del_flag = 0
+                 INNER JOIN bs_building b ON u.building_id = b.id AND b.del_flag = 0
+             WHERE b.community_id = c.id AND h.del_flag = 0
+            ) AS house_count
+        FROM bs_community c
+            LEFT JOIN bs_district d ON c.district_id = d.id
+        WHERE c.del_flag = 0
+        <if test="query.communityName != null and query.communityName != ''">
+            AND c.community_name LIKE CONCAT('%', #{query.communityName}, '%')
+        </if>
+        <if test="query.communityCode != null and query.communityCode != ''">
+            AND c.community_code LIKE CONCAT('%', #{query.communityCode}, '%')
+        </if>
+        <if test="query.districtId != null">
+            AND c.district_id = #{query.districtId}
+        </if>
+        <if test="query.status != null">
+            AND c.status = #{query.status}
+        </if>
+        ORDER BY c.create_time DESC
+    </select>
+
+</mapper>

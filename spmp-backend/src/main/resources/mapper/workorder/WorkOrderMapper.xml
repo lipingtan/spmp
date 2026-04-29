@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.workorder.repository.WorkOrderMapper">
+
+    <select id="selectWorkOrderPage" resultType="com.spmp.workorder.domain.vo.WorkOrderListVO">
+        SELECT
+            wo.id,
+            wo.order_no AS orderNo,
+            wo.order_type AS orderType,
+            wo.address_type AS addressType,
+            wo.community_id AS communityId,
+            wo.reporter_name AS reporterName,
+            wo.status,
+            wo.repair_user_id AS repairUserId,
+            wo.reject_count AS rejectCount,
+            wo.urge_count AS urgeCount,
+            wo.create_time AS createTime,
+            wo.actual_complete_time AS actualCompleteTime,
+            wo.repair_duration AS repairDuration
+        FROM wo_work_order wo
+        WHERE wo.del_flag = 0
+        <if test="query.status != null and query.status != ''">
+            AND wo.status = #{query.status}
+        </if>
+        <if test="query.orderType != null and query.orderType != ''">
+            AND wo.order_type = #{query.orderType}
+        </if>
+        <if test="query.communityId != null">
+            AND wo.community_id = #{query.communityId}
+        </if>
+        <if test="query.buildingId != null">
+            AND wo.building_id = #{query.buildingId}
+        </if>
+        <if test="query.startDate != null and query.startDate != ''">
+            AND wo.create_time &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+            AND wo.create_time &lt;= #{query.endDate}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+            AND (wo.order_no LIKE CONCAT('%', #{query.keyword}, '%')
+                 OR wo.reporter_name LIKE CONCAT('%', #{query.keyword}, '%'))
+        </if>
+        ORDER BY wo.create_time DESC
+    </select>
+
+    <select id="countInProgressByUserIds" resultType="java.util.HashMap">
+        SELECT repair_user_id AS userId, COUNT(*) AS cnt
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND status = 'IN_PROGRESS'
+          AND repair_user_id IN
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+        GROUP BY repair_user_id
+    </select>
+
+    <select id="countByStatus" resultType="java.util.HashMap">
+        SELECT status, COUNT(*) AS cnt
+        FROM wo_work_order
+        WHERE del_flag = 0
+        <if test="communityId != null">
+            AND community_id = #{communityId}
+        </if>
+        <if test="buildingId != null">
+            AND building_id = #{buildingId}
+        </if>
+        <if test="startDate != null">
+            AND create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND create_time &lt;= #{endDate}
+        </if>
+        GROUP BY status
+    </select>
+
+    <select id="avgRepairDuration" resultType="java.lang.Integer">
+        SELECT CAST(AVG(repair_duration) AS SIGNED)
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND status = 'COMPLETED'
+          AND repair_duration IS NOT NULL
+        <if test="communityId != null">
+            AND community_id = #{communityId}
+        </if>
+        <if test="buildingId != null">
+            AND building_id = #{buildingId}
+        </if>
+        <if test="startDate != null">
+            AND actual_complete_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND actual_complete_time &lt;= #{endDate}
+        </if>
+    </select>
+
+    <select id="avgScore" resultType="java.lang.Double">
+        SELECT AVG(e.score)
+        FROM wo_evaluation e
+        INNER JOIN wo_work_order wo ON e.order_id = wo.id AND wo.del_flag = 0
+        WHERE e.del_flag = 0
+        <if test="communityId != null">
+            AND wo.community_id = #{communityId}
+        </if>
+        <if test="buildingId != null">
+            AND wo.building_id = #{buildingId}
+        </if>
+        <if test="startDate != null">
+            AND e.evaluate_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND e.evaluate_time &lt;= #{endDate}
+        </if>
+    </select>
+
+    <select id="countDailyTrend" resultType="com.spmp.workorder.domain.vo.TrendDataVO">
+        SELECT DATE(create_time) AS date, COUNT(*) AS value
+        FROM wo_work_order
+        WHERE del_flag = 0
+        <if test="communityId != null">
+            AND community_id = #{communityId}
+        </if>
+        <if test="buildingId != null">
+            AND building_id = #{buildingId}
+        </if>
+        <if test="startDate != null">
+            AND create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND create_time &lt;= #{endDate}
+        </if>
+        GROUP BY DATE(create_time)
+        ORDER BY DATE(create_time)
+    </select>
+
+    <select id="avgScoreMonthlyTrend" resultType="com.spmp.workorder.domain.vo.TrendDataVO">
+        SELECT DATE_FORMAT(e.evaluate_time, '%Y-%m') AS date, ROUND(AVG(e.score), 1) AS value
+        FROM wo_evaluation e
+        INNER JOIN wo_work_order wo ON e.order_id = wo.id AND wo.del_flag = 0
+        WHERE e.del_flag = 0
+        <if test="communityId != null">
+            AND wo.community_id = #{communityId}
+        </if>
+        <if test="buildingId != null">
+            AND wo.building_id = #{buildingId}
+        </if>
+        <if test="startDate != null">
+            AND e.evaluate_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND e.evaluate_time &lt;= #{endDate}
+        </if>
+        GROUP BY DATE_FORMAT(e.evaluate_time, '%Y-%m')
+        ORDER BY DATE_FORMAT(e.evaluate_time, '%Y-%m')
+    </select>
+
+    <select id="countRepairStats" resultType="java.util.HashMap">
+        SELECT
+            SUM(CASE WHEN status IN ('PENDING_ACCEPT', 'IN_PROGRESS') THEN 1 ELSE 0 END) AS pendingCount,
+            SUM(CASE WHEN status = 'COMPLETED' AND YEAR(actual_complete_time) = YEAR(NOW()) AND MONTH(actual_complete_time) = MONTH(NOW()) THEN 1 ELSE 0 END) AS monthlyCompleted
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND repair_user_id = #{repairUserId}
+    </select>
+
+    <select id="selectTimeoutPendingOrders" resultType="com.spmp.workorder.domain.entity.WorkOrderDO">
+        SELECT *
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND status = 'PENDING_ACCEPT'
+          AND update_time &lt;= #{returnTime}
+          AND cancel_reason IS NULL
+    </select>
+
+    <select id="selectMyWorkOrderPage" resultType="com.spmp.workorder.domain.vo.WorkOrderSimpleVO">
+        SELECT
+            wo.id,
+            wo.order_no AS orderNo,
+            wo.order_type AS orderType,
+            wo.status,
+            wo.description,
+            wo.create_time AS createTime,
+            wo.actual_complete_time AS actualCompleteTime,
+            CASE
+                WHEN wo.address_type = 'HOUSE' THEN CONCAT(bc.community_name, ' ', bb.building_name)
+                ELSE CONCAT(bc.community_name, ' ', bb.building_name, '（公共区域）')
+            END AS addressDesc
+        FROM wo_work_order wo
+        LEFT JOIN bs_community bc ON wo.community_id = bc.id
+        LEFT JOIN bs_building bb ON wo.building_id = bb.id
+        WHERE wo.del_flag = 0
+          AND wo.reporter_id = #{ownerId}
+        <if test="status != null and status != ''">
+            AND wo.status = #{status}
+        </if>
+        ORDER BY wo.create_time DESC
+    </select>
+
+    <select id="selectRepairPendingPage" resultType="com.spmp.workorder.domain.vo.WorkOrderSimpleVO">
+        SELECT
+            wo.id,
+            wo.order_no AS orderNo,
+            wo.order_type AS orderType,
+            wo.status,
+            wo.description,
+            wo.create_time AS createTime,
+            wo.actual_complete_time AS actualCompleteTime,
+            CASE
+                WHEN wo.address_type = 'HOUSE' THEN CONCAT(bc.community_name, ' ', bb.building_name)
+                ELSE CONCAT(bc.community_name, ' ', bb.building_name, '（公共区域）')
+            END AS addressDesc
+        FROM wo_work_order wo
+        LEFT JOIN bs_community bc ON wo.community_id = bc.id
+        LEFT JOIN bs_building bb ON wo.building_id = bb.id
+        WHERE wo.del_flag = 0
+          AND wo.repair_user_id = #{repairUserId}
+          AND wo.status IN ('PENDING_ACCEPT', 'IN_PROGRESS')
+        <if test="status != null and status != ''">
+            AND wo.status = #{status}
+        </if>
+        ORDER BY wo.create_time DESC
+    </select>
+
+    <select id="selectRepairHistoryPage" resultType="com.spmp.workorder.domain.vo.WorkOrderSimpleVO">
+        SELECT
+            wo.id,
+            wo.order_no AS orderNo,
+            wo.order_type AS orderType,
+            wo.status,
+            wo.description,
+            wo.create_time AS createTime,
+            wo.actual_complete_time AS actualCompleteTime,
+            CASE
+                WHEN wo.address_type = 'HOUSE' THEN CONCAT(bc.community_name, ' ', bb.building_name)
+                ELSE CONCAT(bc.community_name, ' ', bb.building_name, '（公共区域）')
+            END AS addressDesc
+        FROM wo_work_order wo
+        LEFT JOIN bs_community bc ON wo.community_id = bc.id
+        LEFT JOIN bs_building bb ON wo.building_id = bb.id
+        WHERE wo.del_flag = 0
+          AND wo.repair_user_id = #{repairUserId}
+          AND wo.status IN ('COMPLETED', 'CANCELLED', 'FORCE_CLOSED')
+        ORDER BY wo.create_time DESC
+    </select>
+
+    <select id="countByCommunityId" resultType="int">
+        SELECT COUNT(*)
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND community_id = #{communityId}
+    </select>
+
+    <select id="countPendingByBuildingId" resultType="int">
+        SELECT COUNT(*)
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND building_id = #{buildingId}
+          AND status IN ('PENDING_DISPATCH', 'PENDING_ACCEPT', 'IN_PROGRESS')
+    </select>
+
+    <select id="selectByOwnerId" resultType="com.spmp.workorder.domain.entity.WorkOrderDO">
+        SELECT *
+        FROM wo_work_order
+        WHERE del_flag = 0
+          AND reporter_id = #{ownerId}
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

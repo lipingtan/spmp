@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.notice.repository.AnnouncementTargetSnapshotMapper">
+
+    <!--
+        未读用户分页：
+        层级 bs_house.unit_id -> bs_unit.building_id -> bs_building.community_id
+    -->
+    <select id="selectUnreadUsersPage" resultType="com.spmp.notice.domain.vo.NoticeUnreadUserVO">
+        SELECT
+            ts.user_id AS userId,
+            MAX(o.owner_name) AS userName,
+            MAX(b.community_id) AS communityId,
+            MAX(u.building_id) AS buildingId
+        FROM nt_announcement_target_snapshot ts
+        LEFT JOIN nt_announcement_read_record rr
+            ON rr.announcement_id = ts.announcement_id
+            AND rr.user_id = ts.user_id
+        LEFT JOIN ow_owner o ON o.user_id = ts.user_id AND o.del_flag = 0
+        LEFT JOIN ow_property_binding pb ON pb.owner_id = o.id AND pb.status = 0 AND pb.del_flag = 0
+        LEFT JOIN bs_house h ON h.id = pb.house_id AND h.del_flag = 0
+        LEFT JOIN bs_unit u ON u.id = h.unit_id AND u.del_flag = 0
+        LEFT JOIN bs_building b ON b.id = u.building_id AND b.del_flag = 0
+        WHERE ts.announcement_id = #{announcementId}
+          AND rr.id IS NULL
+        GROUP BY ts.user_id
+        ORDER BY ts.user_id DESC
+    </select>
+
+    <!--
+        按范围生成目标快照（方案A：H5登录可见口径）：
+        - ALL：所有可登录H5的用户（当前以 ow_owner.user_id 集合表示）
+        - COMMUNITY/BUILDING：由于新口径不再依赖房产绑定，退化为 ALL 处理
+    -->
+    <insert id="insertSnapshotByScope">
+        INSERT IGNORE INTO nt_announcement_target_snapshot (announcement_id, user_id, snapshot_time)
+        SELECT DISTINCT #{announcementId}, o.user_id, NOW()
+        FROM ow_owner o
+        WHERE o.del_flag = 0
+          AND o.user_id IS NOT NULL
+          <!-- scopeType=COMMUNITY/BUILDING 在方案A下退化为 ALL，无额外过滤 -->
+    </insert>
+
+</mapper>

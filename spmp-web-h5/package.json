@@ -1,0 +1,38 @@
+{
+  "name": "spmp-web-h5",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest run",
+    "lint": "eslint . --ext .vue,.js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{vue,ts,js,jsx,tsx,css,json}\""
+  },
+  "dependencies": {
+    "vue": "^3.4.27",
+    "vant": "^4.9.0",
+    "vue-router": "^4.3.2",
+    "pinia": "^2.1.7",
+    "axios": "^1.7.2",
+    "vue-i18n": "^9.13.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.12",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vue-tsc": "^2.0.19",
+    "postcss-px-to-viewport-8-plugin": "^1.2.5",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.2",
+    "vue-eslint-parser": "^9.4.3",
+    "@typescript-eslint/parser": "^7.13.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "eslint-plugin-vue": "^9.26.0",
+    "eslint-config-prettier": "^9.1.0"
+    ,
+    "vitest": "^2.1.9"
+  }
+}

@@ -1,0 +1,129 @@
+# ====================
+# Java 工程相关
+# ====================
+
+# 编译输出
+**/target/
+**/bin/
+**/build/
+**/out/
+
+# Maven 相关
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+
+# Gradle 相关
+**/.gradle/
+**/gradle-app.setting
+**/*.gradle
+**/gradlew
+**/gradlew.bat
+**/build/
+
+# IDE 文件 (Eclipse, IntelliJ, NetBeans)
+**/.idea/
+**/*.iml
+**/.classpath
+**/.project
+**/.settings/
+**/*.iws
+**/*.ipr
+**/nbproject/
+**/*.nbattrs
+
+# 日志文件
+**/*.log
+**/*.log.*
+
+# 临时文件
+**/*.tmp
+**/*.swp
+**/*.lock
+
+# 本地配置
+**/application-local.properties
+**/application-dev.properties  # 根据需要调整
+
+# 运行时配置目录（初始化生成的配置文件）
+spmp-backend/config/
+
+# ====================
+# Node.js 工程相关（PC 端和 H5 端）
+# ====================
+
+# 依赖目录
+**/node_modules/
+**/jspm_packages/
+
+# 构建输出
+**/dist/
+**/build/
+**/.next/
+**/.nuxt/
+**/out/
+**/storybook-static/
+
+# 缓存目录
+**/.cache/
+**/.parcel-cache/
+**/.sass-cache/
+**/.tmp/
+**/.temp/
+
+# 日志文件
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/lerna-debug.log*
+
+# 环境变量文件
+**/.env
+**/.env.*.local
+**/.env.local
+**/.env.*.local
+
+# 打包文件
+**/*.tgz
+**/*.tar.gz
+
+# IDE 和编辑器
+**/.vscode/
+**/.idea/            # 已包含在上方，但重复无妨
+**/*.swp
+**/.DS_Store
+
+# 操作系统生成文件
+**/Thumbs.db
+**/.DS_Store
+
+# ====================
+# 通用忽略项
+# ====================
+
+# 敏感信息
+**/.env
+**/.secrets
+**/*.pem
+**/*.key
+**/*.crt
+
+# 备份文件
+**/*.bak
+**/*.old
+**/*.orig
+
+# 测试覆盖率目录
+**/coverage/
+**/.nyc_output/
+
+# 临时文件
+**/*.log
+**/*.tmp
+
+# 依赖 lock 文件（可选，若团队需要统一版本可去掉注释）
+# **/package-lock.json
+# **/yarn.lock

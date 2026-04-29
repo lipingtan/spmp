@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spmp.base.repository.DistrictMapper">
+
+    <!-- 片区分页查询（关联统计下属小区数量） -->
+    <select id="selectDistrictPage" resultType="com.spmp.base.domain.dto.DistrictPageDTO">
+        SELECT
+            d.id,
+            d.district_name,
+            d.district_code,
+            d.status,
+            d.remark,
+            d.create_time,
+            d.update_time,
+            (SELECT COUNT(*) FROM bs_community c WHERE c.district_id = d.id AND c.del_flag = 0) AS community_count
+        FROM bs_district d
+        WHERE d.del_flag = 0
+        <if test="query.districtName != null and query.districtName != ''">
+            AND d.district_name LIKE CONCAT('%', #{query.districtName}, '%')
+        </if>
+        <if test="query.districtCode != null and query.districtCode != ''">
+            AND d.district_code LIKE CONCAT('%', #{query.districtCode}, '%')
+        </if>
+        <if test="query.status != null">
+            AND d.status = #{query.status}
+        </if>
+        ORDER BY d.create_time DESC
+    </select>
+
+</mapper>
